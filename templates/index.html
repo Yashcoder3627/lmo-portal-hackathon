@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LMO Smart Portal</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f2f5; padding: 20px; }
+        .card { max-width: 450px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #003366; }
+        label { font-weight: bold; margin-top: 10px; display: block; }
+        input { width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+        button:hover { background-color: #218838; }
+        .download-btn { background-color: #007bff; margin-top: 10px; display: none; text-align: center; text-decoration: none; padding: 10px; border-radius: 5px; color: white; }
+        #result { margin-top: 20px; padding: 15px; text-align: center; font-weight: bold; border-radius: 5px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>⚖️ Govt. NAWI Portal</h2>
+        
+        <label>Shop Name / Owner:</label>
+        <input type="text" id="shop_name" placeholder="e.g. Gupta Sweets">
+
+        <label>Standard Master Weight (g):</label>
+        <input type="number" id="std_wt" value="1000">
+
+        <label>Machine Screen Reading (g):</label>
+        <input type="number" id="read_wt" placeholder="e.g. 999">
+
+        <button onclick="runEngine()">Generate Report</button>
+
+        <div id="result"></div>
+        <a id="download_link" class="download-btn" href="" download>📄 Download Official Certificate</a>
+    </div>
+
+    <script>
+        function runEngine() {
+            let shop = document.getElementById('shop_name').value;
+            let std = document.getElementById('std_wt').value;
+            let read = document.getElementById('read_wt').value;
+
+            fetch('/calculate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ shop_name: shop, standard: std, reading: read })
+            })
+            .then(response => response.json())
+            .then(data => {
+                let resDiv = document.getElementById('result');
+                let downBtn = document.getElementById('download_link');
+                
+                resDiv.style.display = "block";
+                resDiv.innerHTML = data.status + "<br>Error: " + data.error + "g";
+                resDiv.style.backgroundColor = data.color;
+                resDiv.style.color = "white";
+
+                if(data.pdf_url) {
+                    downBtn.href = data.pdf_url;
+                    downBtn.style.display = "block";
+                } else {
+                    downBtn.style.display = "none";
+                }
+            });
+        }
+    </script>
+</body>
+</html>
